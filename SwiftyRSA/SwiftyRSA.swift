@@ -132,7 +132,7 @@ enum SwiftyRSA {
      Example of key with X509 header (notice the additional ASN.1 sequence):
      https://lapo.it/asn1js/#30819F300D06092A864886F70D010101050003818D0030818902818100D0674615A252ED3D75D2A3073A0A8A445F3188FD3BEB8BA8584F7299E391BDEC3427F287327414174997D147DD8CA62647427D73C9DA5504E0A3EED5274A1D50A1237D688486FADB8B82061675ABFA5E55B624095DB8790C6DBCAE83D6A8588C9A6635D7CF257ED1EDE18F04217D37908FD0CBB86B2C58D5F762E6207FF7B92D0203010001
      */
-    static func stripPublicKeyHeader(keyData: Data) throws -> Data {
+    static func stripPublicKeyHeader(_ keyData: Data) throws -> Data {
         let count = keyData.count / MemoryLayout<CUnsignedChar>.size
         
         guard count > 0 else {
@@ -191,7 +191,7 @@ enum SwiftyRSA {
         return data
     }
     
-    static func removeKey(tag: String) {
+    static func removeKey(_ tag: String) {
         
         guard let tagData = tag.data(using: .utf8) else {
             return

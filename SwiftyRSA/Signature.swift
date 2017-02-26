@@ -8,7 +8,7 @@
 
 import Foundation
 
-@objc public class Signature: NSObject {
+@objc open class Signature: NSObject {
     
     @objc public enum DigestType: Int {
         case sha1
@@ -29,7 +29,7 @@ import Foundation
     }
     
     /// Data of the signature
-    public let data: Data
+    open let data: Data
     
     /// Creates a signature with data.
     ///
@@ -50,7 +50,7 @@ import Foundation
     }
     
     /// Returns the base64 representation of the signature.
-    public var base64String: String {
+    open var base64String: String {
         return data.base64EncodedString()
     }
 }

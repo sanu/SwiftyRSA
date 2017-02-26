@@ -14,7 +14,7 @@ public protocol Key {
     init(data: Data) throws
 }
 
-@objc public class PublicKey: NSObject, Key {
+@objc open class PublicKey: NSObject, Key {
     
     let reference: SecKey
     let tag: String
@@ -25,7 +25,7 @@ public protocol Key {
     /// - Throws: SwiftyRSAError
     required public init(data: Data) throws {
         tag = UUID().uuidString
-        let data = try SwiftyRSA.stripPublicKeyHeader(keyData: data)
+        let data = try SwiftyRSA.stripPublicKeyHeader(data)
     	reference = try SwiftyRSA.addKey(data, isPublic: true, tag: tag)
     }
     
@@ -90,7 +90,7 @@ public protocol Key {
     /// - parameter pemString: The string to use to parse out values
     ///
     /// - returns: An array of `PublicKey` objects
-    public static func publicKeys(pemEncoded pemString: String) -> [PublicKey] {
+    open static func publicKeys(pemEncoded pemString: String) -> [PublicKey] {
         
         // If our regexp isn't valid, or the input string is empty, we can't move forward…
         guard let publicKeyRegexp = publicKeyRegex, pemString.characters.count > 0 else {
@@ -124,11 +124,11 @@ public protocol Key {
     }
     
     deinit {
-        SwiftyRSA.removeKey(tag: tag)
+        SwiftyRSA.removeKey(tag)
     }
 }
 
-@objc public class PrivateKey: NSObject, Key {
+@objc open class PrivateKey: NSObject, Key {
     
     let reference: SecKey
     let tag: String
@@ -191,6 +191,6 @@ public protocol Key {
     }
     
     deinit {
-        SwiftyRSA.removeKey(tag: tag)
+        SwiftyRSA.removeKey(tag)
     }
 }

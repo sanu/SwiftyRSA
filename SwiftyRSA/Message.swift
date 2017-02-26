@@ -8,8 +8,8 @@
 
 import Foundation
 
-@objc public class VerificationResult: NSObject {
-    public let isSuccessful: Bool
+@objc open class VerificationResult: NSObject {
+    open let isSuccessful: Bool
     init(isSuccessful: Bool) {
         self.isSuccessful = isSuccessful
     }
@@ -21,13 +21,13 @@ public protocol Message {
     init(data: Data)
 }
 
-@objc public class EncryptedMessage: NSObject, Message {
+@objc open class EncryptedMessage: NSObject, Message {
     
     /// Data of the message
-    public let data: Data
+    open let data: Data
     
     /// Base64-encoded string of the message data
-    public var base64String: String {
+    open var base64String: String {
         return data.base64EncodedString()
     }
     
@@ -56,11 +56,11 @@ public protocol Message {
     ///   - padding: Padding to use during the decryption
     /// - Returns: Clear message
     /// - Throws: SwiftyRSAError
-    public func decrypted(with key: PrivateKey, padding: Padding) throws -> ClearMessage {
+    open func decrypted(with key: PrivateKey, padding: Padding) throws -> ClearMessage {
         let blockSize = SecKeyGetBlockSize(key.reference)
         
         var encryptedDataAsArray = [UInt8](repeating: 0, count: data.count)
-        (data as NSData).getBytes(&encryptedDataAsArray, length: data.count)
+        (data as Data).copyBytes(to: &encryptedDataAsArray, count: data.count)
         
         var decryptedDataBytes = [UInt8](repeating: 0, count: 0)
         var idx = 0
@@ -87,13 +87,13 @@ public protocol Message {
     }
 }
 
-@objc public class ClearMessage: NSObject, Message {
+@objc open class ClearMessage: NSObject, Message {
     
     /// Data of the message
-    public let data: Data
+    open let data: Data
     
     /// Base64-encoded string of the message data
-    public var base64String: String {
+    open var base64String: String {
         return data.base64EncodedString()
     }
     
@@ -147,7 +147,7 @@ public protocol Message {
     /// - Parameter encoding: Encoding to use during the string conversion
     /// - Returns: String representation of the clear message
     /// - Throws: SwiftyRSAError
-    public func string(encoding: String.Encoding) throws -> String {
+    open func string(_ encoding: String.Encoding) throws -> String {
         guard let str = String(data: data, encoding: encoding) else {
             throw SwiftyRSAError(message: "Couldn't convert data to string representation")
         }
@@ -161,13 +161,13 @@ public protocol Message {
     ///   - padding: Padding to use during the encryption
     /// - Returns: Encrypted message
     /// - Throws: SwiftyRSAError
-    public func encrypted(with key: PublicKey, padding: Padding) throws -> EncryptedMessage {
+    open func encrypted(with key: PublicKey, padding: Padding) throws -> EncryptedMessage {
         
         let blockSize = SecKeyGetBlockSize(key.reference)
         let maxChunkSize = (padding == []) ? blockSize : blockSize - 11
         
         var decryptedDataAsArray = [UInt8](repeating: 0, count: data.count)
-        (data as NSData).getBytes(&decryptedDataAsArray, length: data.count)
+        (data as Data).copyBytes(to: &decryptedDataAsArray, count: data.count)
         
         var encryptedDataBytes = [UInt8](repeating: 0, count: 0)
         var idx = 0
@@ -203,9 +203,9 @@ public protocol Message {
     ///   - digestType: Digest
     /// - Returns: Signature of the clear message after signing it with the specified digest type.
     /// - Throws: SwiftyRSAError
-    public func signed(with key: PrivateKey, digestType: Signature.DigestType) throws -> Signature {
+    open func signed(with key: PrivateKey, digestType: Signature.DigestType) throws -> Signature {
         
-        let digest = self.digest(digestType: digestType)
+        let digest = self.digest(digestType)
         let blockSize = SecKeyGetBlockSize(key.reference)
         let maxChunkSize = blockSize - 11
         
@@ -237,14 +237,14 @@ public protocol Message {
     ///   - digestType: Digest type used for the signature
     /// - Returns: Result of the verification
     /// - Throws: SwiftyRSAError
-    public func verify(with key: PublicKey, signature: Signature, digestType: Signature.DigestType) throws -> VerificationResult {
+    open func verify(with key: PublicKey, signature: Signature, digestType: Signature.DigestType) throws -> VerificationResult {
         
-        let digest = self.digest(digestType: digestType)
+        let digest = self.digest(digestType)
         var digestBytes = [UInt8](repeating: 0, count: digest.count)
         (digest as NSData).getBytes(&digestBytes, length: digest.count)
         
         var signatureBytes = [UInt8](repeating: 0, count: signature.data.count)
-        (signature.data as NSData).getBytes(&signatureBytes, length: signature.data.count)
+        (signature.data as Data).copyBytes(to: &signatureBytes, count: signature.data.count)
         
         let status = SecKeyRawVerify(key.reference, digestType.padding, digestBytes, digestBytes.count, signatureBytes, signatureBytes.count)
         
@@ -257,7 +257,7 @@ public protocol Message {
         }
     }
     
-    func digest(digestType: Signature.DigestType) -> Data {
+    func digest(_ digestType: Signature.DigestType) -> Data {
         
         let digest: Data
         
